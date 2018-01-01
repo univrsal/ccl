@@ -1,4 +1,10 @@
-#include "ccl.h"
+#include "ccl.hpp"
+
+/**
+ * This file is part of CCL which is licenced under
+ * the MIT licence (See LICENCE)
+ * github.com/univrsal/ccl
+ */
 
 enum DATA_TYPE {
     INT,

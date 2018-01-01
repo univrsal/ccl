@@ -1,4 +1,4 @@
-#include "ccl.h"
+#include "ccl.hpp"
 #include <iostream>
 
 /**
@@ -7,6 +7,13 @@
  * github.com/univrsal/ccl
  */
 
+
+/*
+   Example program for CCL
+   Creates a config file in the same directory named test.ini
+   Adds a couple of different test values
+   modifies one and reads out two.
+*/
 int main(int argc, char **argv)
 {
     ccl_config* cfg = new ccl_config("./test.ini", "test config");
