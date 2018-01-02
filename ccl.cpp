@@ -1,16 +1,11 @@
 #include "ccl.hpp"
 
-/**
- * This file is part of CCL which is licenced under
- * the MIT licence (See LICENCE)
- * github.com/univrsal/ccl
- */
-
 enum DATA_TYPE {
+    INVALID,
     INT,
     STRING,
     BOOL,
-    FLOAT,
+    FLOAT
 };
 
 
@@ -182,13 +177,24 @@ void ccl_config::load(void)
 
         while (std::getline(f, line))
         {
-            std::string comment = line.erase(0, 2);
+            std::string comment; // Skip all comments and save last one
+            while (line.at(0) == '#')
+            {
+                comment = line;
+                std::getline(f, line);
+            }
+
+            DATA_TYPE type = util_parse_type(line.at(0)); // Read in the value type
+            
+            if (type == INVALID)
+            {
+                continue;
+            }
+
+            line = line.erase(0, 2);
+            
             std::string segment;
             std::vector<std::string> segments;
-
-            std::getline(f, line);
-            DATA_TYPE type = util_parse_type(line.at(0));
-            line = line.erase(0, 2);
             std::stringstream stream(line);
 
             while (std::getline(stream, segment, '='))
@@ -205,7 +211,10 @@ void ccl_config::load(void)
             add_node(new_node);
         }
 
-        m_empty = false;
+        if (m_first_node)
+        {
+            m_empty = false;
+        }
     }
 }
 
@@ -311,7 +320,7 @@ void ccl_config::set_int(std::string id, int val)
 {
     ccl_data* node = get_node(id);
 
-    if (node)
+    if (node && node->get_type() == INT)
     {
         node->set_int(val);
     }
@@ -321,7 +330,7 @@ void ccl_config::set_float(std::string id, float val)
 {
     ccl_data* node = get_node(id);
 
-    if (node)
+    if (node && node->get_type() == FLOAT)
     {
         node->set_float(val);
     }
@@ -331,7 +340,7 @@ void ccl_config::set_bool(std::string id, bool val)
 {
     ccl_data* node = get_node(id);
 
-    if (node != nullptr)
+    if (node && node->get_type() == BOOL)
     {
         node->set_bool(val);
     }
@@ -341,7 +350,7 @@ void ccl_config::set_string(std::string id, std::string val)
 {
     ccl_data* node = get_node(id);
 
-    if (node)
+    if (node && node->get_type() == STRING)
     {
         node->set_string(val);
     }
@@ -351,7 +360,7 @@ int ccl_config::get_int(std::string id)
 {
     ccl_data* node = get_node(id);
 
-    if (node)
+    if (node && node->get_type() == INT)
     {
         return std::stoi(node->get_value());
     }
@@ -363,7 +372,7 @@ float ccl_config::get_float(std::string id)
 {
     ccl_data* node = get_node(id);
 
-    if (node)
+    if (node && node->get_type() == FLOAT)
     {
         return std::stof(node->get_value());
     }
@@ -375,7 +384,7 @@ bool ccl_config::get_bool(std::string id)
 {
     ccl_data* node = get_node(id);
 
-    if (node)
+    if (node && node->get_type() == BOOL)
     {
         return std::stoi(id) == 1 ? true : false;
     }
@@ -398,15 +407,15 @@ DATA_TYPE ccl_config::util_parse_type(char c)
 {
     switch (c)
     {
-    case '0':
-        return DATA_TYPE::INT;
     case '1':
-        return DATA_TYPE::STRING;
+        return DATA_TYPE::INT;
     case '2':
-        return DATA_TYPE::BOOL;
+        return DATA_TYPE::STRING;
     case '3':
+        return DATA_TYPE::BOOL;
+    case '4':
         return DATA_TYPE::FLOAT;
     default:
-        return DATA_TYPE::INT;
+        return DATA_TYPE::INVALID;
     }
 }
