@@ -12,7 +12,13 @@
  * github.com/univrsal/ccl
  */
 
-enum DATA_TYPE;
+enum DATA_TYPE {
+    INVALID,
+    INT,
+    STRING,
+    BOOL,
+    FLOAT
+};
 
 class ccl_data
 {

@@ -1,14 +1,5 @@
 #include "ccl.hpp"
 
-enum DATA_TYPE {
-    INVALID,
-    INT,
-    STRING,
-    BOOL,
-    FLOAT
-};
-
-
 ccl_data::ccl_data()
 {
 }
