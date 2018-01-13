@@ -1,4 +1,6 @@
-#pragma once
+#ifndef CCL_HPP
+#define CCL_HPP
+
 #include <string>
 #include <fstream>
 #include <vector>
@@ -89,3 +91,4 @@ private:
     std::string m_header;
 };
 
+#endif // CCL_HPP
