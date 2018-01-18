@@ -1,6 +1,12 @@
 #ifndef CCL_HPP
 #define CCL_HPP
 
+#ifdef _WIN32
+#define WINDOWS
+#else
+#define LINUX
+#endif
+
 #include <string>
 #include <fstream>
 #include <vector>
@@ -12,6 +18,7 @@
  * github.com/univrsal/ccl
  */
 
+#ifdef LINUX
 enum DATA_TYPE {
     INVALID,
     INT,
@@ -19,6 +26,9 @@ enum DATA_TYPE {
     BOOL,
     FLOAT
 };
+#else
+enum DATA_TYPE;
+#endif
 
 class ccl_data
 {

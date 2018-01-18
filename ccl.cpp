@@ -1,5 +1,15 @@
 #include "ccl.hpp"
 
+#ifdef WINDOWS
+enum DATA_TYPE {
+    INVALID,
+    INT,
+    STRING,
+    BOOL,
+    FLOAT
+};
+#endif
+
 ccl_data::ccl_data()
 {
 }
