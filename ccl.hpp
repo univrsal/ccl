@@ -12,6 +12,9 @@
  * github.com/univrsal/ccl
  */
 
+#ifdef _MSC_VER
+enum DATA_TYPE;
+#else
 enum DATA_TYPE {
     INVALID,
     INT,
@@ -19,6 +22,7 @@ enum DATA_TYPE {
     BOOL,
     FLOAT
 };
+#endif
 
 class ccl_data
 {
@@ -60,6 +64,10 @@ class ccl_config
 public:
     ccl_config();
     ccl_config(std::string path, std::string header);
+    #ifdef _MSC_VER
+    ccl_config::ccl_config(std::wstring path, std::string header);
+    #endif
+    
     ~ccl_config();
 
     void free(void);
@@ -93,8 +101,18 @@ private:
 
     bool m_empty;
     ccl_data* m_first_node;
+    #ifdef _MSC_VER
+    std::wstring m_path;
+    #else
     std::string m_path;
+    #endif
+
     std::string m_header;
 };
+
+#ifdef _MSC_VER
+#include <Windows.h>
+std::wstring to_utf_16(std::string str);
+#endif
 
 #endif // CCL_HPP

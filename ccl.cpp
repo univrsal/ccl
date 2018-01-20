@@ -1,5 +1,13 @@
 #include "ccl.hpp"
 
+enum DATA_TYPE {
+    CCL_TYPE_INVALID,
+    CCL_TYPE_INT,
+    CCL_TYPE_STRING,
+    CCL_TYPE_BOOL,
+    CCL_TYPE_FLOAT
+};
+
 ccl_data::ccl_data()
 {
 }
@@ -16,7 +24,7 @@ ccl_data::ccl_data(std::string id, std::string comment, int value)
 {
     m_comment = comment;
     m_id = id;
-    m_type = INT;
+    m_type = CCL_TYPE_INT;
     m_value = std::to_string(value);
 }
 
@@ -24,7 +32,7 @@ ccl_data::ccl_data(std::string id, std::string comment, float value)
 {
     m_comment = comment;
     m_id = id;
-    m_type = FLOAT;
+    m_type = CCL_TYPE_FLOAT;
     m_value = std::to_string(value);
 }
 
@@ -32,7 +40,7 @@ ccl_data::ccl_data(std::string id, std::string comment, bool value)
 {
     m_comment = comment;
     m_id = id;
-    m_type = BOOL;
+    m_type = CCL_TYPE_BOOL;
     m_value = std::to_string(value);
 }
 
@@ -40,7 +48,7 @@ ccl_data::ccl_data(std::string id, std::string comment, std::string value)
 {
     m_comment = comment;
     m_id = id;
-    m_type = STRING;
+    m_type = CCL_TYPE_STRING;
     m_value = value;
 }
 
@@ -116,7 +124,11 @@ ccl_config::ccl_config()
     m_empty = true;
     m_first_node = NULL;
     m_header = "";
+    #ifdef _MSC_VER
+    m_path = L"";
+    #else
     m_path = "";
+    #endif
 }
 
 ccl_config::ccl_config(std::string path, std::string header)
@@ -124,16 +136,32 @@ ccl_config::ccl_config(std::string path, std::string header)
     m_empty = true;
     m_first_node = NULL;
     m_header = header;
+    #ifdef _MSC_VER
+    m_path = to_utf_16(path);
+    #else
+    m_path = path;
+    #endif
+
+    load();
+}
+
+#ifdef _MSC_VER
+ccl_config::ccl_config(std::wstring path, std::string header)
+{
+    m_empty = true;
+    m_first_node = NULL;
+    m_header = header;
     m_path = path;
     load();
 }
+#endif
 
 ccl_config::~ccl_config()
 {
     free();
     m_empty = true;
     m_header = "";
-    m_path = "";
+    m_path = L"";
 }
 
 void ccl_config::free(void)
@@ -177,7 +205,7 @@ void ccl_config::load(void)
 
             DATA_TYPE type = util_parse_type(line.at(0)); // Read in the value type
             
-            if (type == INVALID)
+            if (type == CCL_TYPE_INVALID)
             {
                 continue;
             }
@@ -215,8 +243,12 @@ void ccl_config::write(void)
     {
         return;
     }
-        
+
+    #ifdef _MSC_VER
+    DeleteFileW(m_path.c_str());
+    #else
     std::remove(m_path.c_str());
+    #endif
     std::ofstream fs(m_path.c_str());
 
     if (fs)
@@ -311,7 +343,7 @@ void ccl_config::set_int(std::string id, int val)
 {
     ccl_data* node = get_node(id);
 
-    if (node && node->get_type() == INT)
+    if (node && node->get_type() == CCL_TYPE_INT)
     {
         node->set_int(val);
     }
@@ -321,7 +353,7 @@ void ccl_config::set_float(std::string id, float val)
 {
     ccl_data* node = get_node(id);
 
-    if (node && node->get_type() == FLOAT)
+    if (node && node->get_type() == CCL_TYPE_FLOAT)
     {
         node->set_float(val);
     }
@@ -331,7 +363,7 @@ void ccl_config::set_bool(std::string id, bool val)
 {
     ccl_data* node = get_node(id);
 
-    if (node && node->get_type() == BOOL)
+    if (node && node->get_type() == CCL_TYPE_BOOL)
     {
         node->set_bool(val);
     }
@@ -341,7 +373,7 @@ void ccl_config::set_string(std::string id, std::string val)
 {
     ccl_data* node = get_node(id);
 
-    if (node && node->get_type() == STRING)
+    if (node && node->get_type() == CCL_TYPE_STRING)
     {
         node->set_string(val);
     }
@@ -351,7 +383,7 @@ int ccl_config::get_int(std::string id)
 {
     ccl_data* node = get_node(id);
 
-    if (node && node->get_type() == INT)
+    if (node && node->get_type() == CCL_TYPE_INT)
     {
         return std::stoi(node->get_value());
     }
@@ -363,7 +395,7 @@ float ccl_config::get_float(std::string id)
 {
     ccl_data* node = get_node(id);
 
-    if (node && node->get_type() == FLOAT)
+    if (node && node->get_type() == CCL_TYPE_FLOAT)
     {
         return std::stof(node->get_value());
     }
@@ -375,7 +407,7 @@ bool ccl_config::get_bool(std::string id)
 {
     ccl_data* node = get_node(id);
 
-    if (node && node->get_type() == BOOL)
+    if (node && node->get_type() == CCL_TYPE_BOOL)
     {
         return std::stoi(id) == 1 ? true : false;
     }
@@ -399,14 +431,26 @@ DATA_TYPE ccl_config::util_parse_type(char c)
     switch (c)
     {
     case '1':
-        return DATA_TYPE::INT;
+        return DATA_TYPE::CCL_TYPE_INT;
     case '2':
-        return DATA_TYPE::STRING;
+        return DATA_TYPE::CCL_TYPE_STRING;
     case '3':
-        return DATA_TYPE::BOOL;
+        return DATA_TYPE::CCL_TYPE_BOOL;
     case '4':
-        return DATA_TYPE::FLOAT;
+        return DATA_TYPE::CCL_TYPE_FLOAT;
     default:
-        return DATA_TYPE::INVALID;
+        return DATA_TYPE::CCL_TYPE_INVALID;
     }
+}
+
+std::wstring to_utf_16(std::string str)
+{
+    std::wstring ret;
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), NULL, 0);
+    if (len > 0)
+    {
+        ret.resize(len);
+        MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), &ret[0], len);
+    }
+    return ret;
 }
