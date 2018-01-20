@@ -1,5 +1,6 @@
 #include "ccl.hpp"
 
+#ifdef WINDOWS
 enum DATA_TYPE {
     CCL_TYPE_INVALID,
     CCL_TYPE_INT,
@@ -7,6 +8,8 @@ enum DATA_TYPE {
     CCL_TYPE_BOOL,
     CCL_TYPE_FLOAT
 };
+#endif
+
 
 ccl_data::ccl_data()
 {

@@ -1,6 +1,12 @@
 #ifndef CCL_HPP
 #define CCL_HPP
 
+#ifdef _WIN32
+#define WINDOWS
+#else
+#define LINUX
+#endif
+
 #include <string>
 #include <fstream>
 #include <vector>
@@ -12,15 +18,16 @@
  * github.com/univrsal/ccl
  */
 
+
 #ifdef _MSC_VER
 enum DATA_TYPE;
 #else
 enum DATA_TYPE {
-    INVALID,
-    INT,
-    STRING,
-    BOOL,
-    FLOAT
+    CCL_TYPE_INVALID,
+    CCL_TYPE_INT,
+    CCL_TYPE_STRING,
+    CCL_TYPE_BOOL,
+    CCL_TYPE_FLOAT
 };
 #endif
 
