@@ -164,7 +164,7 @@ ccl_config::~ccl_config()
     free();
     m_empty = true;
     m_header = "";
-    m_path = L"";
+    m_path.clear();
 }
 
 void ccl_config::free(void)
@@ -446,6 +446,7 @@ DATA_TYPE ccl_config::util_parse_type(char c)
     }
 }
 
+#ifdef WINDOWS
 std::wstring to_utf_16(std::string str)
 {
     std::wstring ret;
@@ -457,3 +458,4 @@ std::wstring to_utf_16(std::string str)
     }
     return ret;
 }
+#endif

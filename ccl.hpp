@@ -31,6 +31,8 @@ enum DATA_TYPE {
 };
 #endif
 
+// Data class that holds config entries
+// CCL Will create these automatically
 class ccl_data
 {
 public:
@@ -66,10 +68,13 @@ private:
     ccl_data* m_next;
 };
 
+// Class holding all information and data of a config file
 class ccl_config
 {
 public:
     ccl_config();
+    // Constructor for CCL configs
+    // Supports unicode paths
     ccl_config(std::string path, std::string header);
     #ifdef _MSC_VER
     ccl_config::ccl_config(std::wstring path, std::string header);
@@ -81,25 +86,42 @@ public:
     void load(void);
     void write(void);
 
+    // True if the file didn't exist our couldn't be loaded
     bool is_empty(void);
+    // True if file exists and can be accessed
     bool can_load(void);
+    // True if config value could be found by identifier
     bool node_exists(std::string id);
+    // Get data node by identifier
     ccl_data* get_node(std::string id);
 
+    // Adds a new data node (Use type specific methods instead)
     void add_node(ccl_data* node);
+    // Adds a new value of type int
     void add_int(std::string id, std::string comment, int val);
+    // Adds a new value of type float
     void add_float(std::string id, std::string comment, float val);
+    // Adds a new value of type boolean
     void add_bool(std::string id, std::string comment, bool val);
+    // Adds a new value of type string
     void add_string(std::string id, std::string comment, std::string val);
 
+    // Sets an entry to a new value if it exists
     void set_int(std::string id, int val);
+    // Sets an entry to a new value if it exists
     void set_float(std::string id, float val);
+    // Sets an entry to a new value if it exists
     void set_bool(std::string id, bool val);
+    // Sets an entry to a new value if it exists
     void set_string(std::string id, std::string val);
     
+    // Reads out a value if it exists
     int get_int(std::string id);
+    // Reads out a value if it exists
     float get_float(std::string id);
+    // Reads out a value if it exists
     bool get_bool(std::string id);
+    // Reads out a value if it exists
     std::string get_string(std::string id);
 
 private:
