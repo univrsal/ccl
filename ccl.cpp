@@ -412,7 +412,7 @@ bool ccl_config::get_bool(std::string id)
 
     if (node && node->get_type() == CCL_TYPE_BOOL)
     {
-        return std::stoi(id) == 1 ? true : false;
+        return std::stoi(node->get_value()) == 1 ? true : false;
     }
 
     return false;
