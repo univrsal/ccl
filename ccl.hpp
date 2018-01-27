@@ -86,6 +86,8 @@ public:
     void load(void);
     void write(void);
 
+    ccl_data* get_first(void);
+
     // True if the file didn't exist our couldn't be loaded
     bool is_empty(void);
     // True if file exists and can be accessed
