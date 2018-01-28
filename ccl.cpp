@@ -286,7 +286,7 @@ bool ccl_config::node_exists(std::string id)
     return get_node(id) != NULL;
 }
 
-ccl_data* get_first(void)
+ccl_data* ccl_config::get_first(void)
 {
     return m_first_node;
 }
