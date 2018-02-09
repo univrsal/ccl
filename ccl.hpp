@@ -8,7 +8,11 @@
 #endif
 
 #include <string>
+#include <memory>
+#include <cstdio>
+#include <iostream>
 #include <fstream>
+#include <map>
 #include <vector>
 #include <sstream>
 
@@ -18,9 +22,9 @@
  * github.com/univrsal/ccl
  */
 
-
 #ifdef _MSC_VER
 enum DATA_TYPE;
+enum ERROR_LEVEL;
 #else
 enum DATA_TYPE {
     CCL_TYPE_INVALID,
@@ -29,7 +33,14 @@ enum DATA_TYPE {
     CCL_TYPE_BOOL,
     CCL_TYPE_FLOAT
 };
+
+enum ERROR_LEVEL {
+    CCL_ERROR_NORMAL,
+    CCL_ERROR_FATAL
+};
 #endif
+
+
 
 // Data class that holds config entries
 // CCL Will create these automatically
@@ -86,7 +97,7 @@ public:
     void load(void);
     void write(void);
 
-    ccl_data* get_first(void);
+    ccl_data * get_first(void);
 
     // True if the file didn't exist our couldn't be loaded
     bool is_empty(void);
@@ -126,12 +137,38 @@ public:
     // Reads out a value if it exists
     std::string get_string(std::string id);
 
+    /* Errors */
+    // True if any erros were reported
+    // Anything that impacts loading of the file or values
+    // is considered an error
+    bool has_errors(void);
+    
+    // True if fatal errors were reported
+    // which prevent CCL from working correctly
+    bool has_fatal_errors(void);
+
+    // If any errors were reported they'll
+    // be formatted into one string here
+    // This only containts the last five errors and
+    // the amount of total errors
+    std::string get_error_message(void);
+
 private:
     
+    /* Error reporting */
+    std::map<std::string, ERROR_LEVEL> m_errors;
+
+    void add_error(std::string error_msg, ERROR_LEVEL lvl);
+
+    const char* error_to_string(ERROR_LEVEL lvl);
+
     DATA_TYPE util_parse_type(char c);
 
     bool m_empty;
+    bool m_fatal_errors = false;
+
     ccl_data* m_first_node;
+
     #ifdef _MSC_VER
     std::wstring m_path;
     #else

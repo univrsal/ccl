@@ -8,6 +8,11 @@ enum DATA_TYPE {
     CCL_TYPE_BOOL,
     CCL_TYPE_FLOAT
 };
+
+enum ERROR_LEVEL {
+    CCL_ERROR_NORMAL,
+    CCL_ERROR_FATAL
+};
 #endif
 
 
@@ -182,6 +187,15 @@ void ccl_config::free(void)
     node = NULL;
 }
 
+template<typename ... Args>
+std::string format(const char * format, Args ... args)
+{
+    size_t size = snprintf(nullptr, 0, format, args ...) + 1;
+    std::unique_ptr<char[]> buf(new char[size]);
+    snprintf(buf.get(), size, format, args ...);
+    return std::string(buf.get(), buf.get() + size - 1);
+}
+
 void ccl_config::load(void)
 {
     if (!can_load())
@@ -195,8 +209,14 @@ void ccl_config::load(void)
     {
         std::string line;
         std::getline(f, line);
-        m_header = line.erase(0, 2);
+        int line_index = 2;
 
+        if (line.at(0) == '#')
+            m_header = line.erase(0, 2);
+        else
+            add_error("Line one in config has to be a comment! First value skipped!", CCL_ERROR_NORMAL);
+
+        
         while (std::getline(f, line))
         {
             std::string comment; // Skip all comments and save last one
@@ -204,12 +224,14 @@ void ccl_config::load(void)
             {
                 comment = line;
                 std::getline(f, line);
+                line_index++;
             }
 
             DATA_TYPE type = util_parse_type(line.at(0)); // Read in the value type
             
             if (type == CCL_TYPE_INVALID)
             {
+                add_error(format("Invalid type '%c' at line %i", line.at(0), line_index), CCL_ERROR_NORMAL);
                 continue;
             }
 
@@ -226,17 +248,23 @@ void ccl_config::load(void)
 
             if (segments.size() < 1)
             {
+                add_error(format("Invalid value at line %i. No '=' found", line_index), CCL_ERROR_NORMAL);
                 continue;
             }
 
             ccl_data* new_node = new ccl_data(segments[0], comment, segments[1], type);
             add_node(new_node);
+            line_index++;
         }
 
         if (m_first_node)
         {
             m_empty = false;
         }
+    }
+    else
+    {
+        add_error(format("File %s does not exist or cannot be accessed", m_path), CCL_ERROR_NORMAL);
     }
 }
 
@@ -268,6 +296,10 @@ void ccl_config::write(void)
         
         fs.close();
     }
+    else
+    {
+        add_error(format("Couldn't write to %s", m_path.c_str()), CCL_ERROR_FATAL);
+    }
 }
 
 bool ccl_config::is_empty(void)
@@ -283,7 +315,10 @@ bool ccl_config::can_load(void)
 
 bool ccl_config::node_exists(std::string id)
 {
-    return get_node(id) != NULL;
+    bool flag = get_node(id) != NULL;
+    if (flag)
+        add_error(format("Value with id '%s' already exists", id.c_str()), CCL_ERROR_NORMAL);
+    return flag;
 }
 
 ccl_data* ccl_config::get_first(void)
@@ -309,7 +344,7 @@ ccl_data * ccl_config::get_node(std::string id)
         
         node = node->get_next();
     }
-
+    add_error(format("Value with id '%s' does not exist", id.c_str()), CCL_ERROR_NORMAL);
     return NULL;
 }
 
@@ -355,6 +390,10 @@ void ccl_config::set_int(std::string id, int val)
     {
         node->set_int(val);
     }
+    else
+    {
+        add_error(format("Cannot set value of '%s' to '%i'. Doesn't exist or type mismatch", id.c_str(), val), CCL_ERROR_NORMAL);
+    }
 }
 
 void ccl_config::set_float(std::string id, float val)
@@ -364,6 +403,10 @@ void ccl_config::set_float(std::string id, float val)
     if (node && node->get_type() == CCL_TYPE_FLOAT)
     {
         node->set_float(val);
+    }
+    else
+    {
+        add_error(format("Cannot set value of '%s' to '%f'. Doesn't exist or type mismatch", id.c_str(), val), CCL_ERROR_NORMAL);
     }
 }
 
@@ -375,6 +418,10 @@ void ccl_config::set_bool(std::string id, bool val)
     {
         node->set_bool(val);
     }
+    else
+    {
+        add_error(format("Cannot set value of '%s' to '%i'. Doesn't exist or type mismatch", id.c_str(), val), CCL_ERROR_NORMAL);
+    }
 }
 
 void ccl_config::set_string(std::string id, std::string val)
@@ -385,6 +432,10 @@ void ccl_config::set_string(std::string id, std::string val)
     {
         node->set_string(val);
     }
+    else
+    {
+        add_error(format("Cannot set value of '%s' to '%s'. Doesn't exist or type mismatch", id.c_str(), val), CCL_ERROR_NORMAL);
+    }
 }
 
 int ccl_config::get_int(std::string id)
@@ -394,6 +445,10 @@ int ccl_config::get_int(std::string id)
     if (node && node->get_type() == CCL_TYPE_INT)
     {
         return std::stoi(node->get_value());
+    }
+    else
+    {
+        add_error(format("Cannot get int value of '%s'. Doesn't exist or type mismatch", id.c_str()), CCL_ERROR_NORMAL);
     }
 
     return 0;
@@ -407,6 +462,10 @@ float ccl_config::get_float(std::string id)
     {
         return std::stof(node->get_value());
     }
+    else
+    {
+        add_error(format("Cannot get float value of '%s'. Doesn't exist or type mismatch", id.c_str()), CCL_ERROR_NORMAL);
+    }
 
     return 0.0f;
 }
@@ -418,6 +477,10 @@ bool ccl_config::get_bool(std::string id)
     if (node && node->get_type() == CCL_TYPE_BOOL)
     {
         return std::stoi(node->get_value()) == 1 ? true : false;
+    }
+    else
+    {
+        add_error(format("Cannot get bool value of '%s'. Doesn't exist or type mismatch", id.c_str()), CCL_ERROR_NORMAL);
     }
 
     return false;
@@ -431,7 +494,68 @@ std::string ccl_config::get_string(std::string id)
     {
         return node->get_value();
     }
+    else
+    {
+        add_error(format("Cannot get string value of '%s'. Doesn't exist or type mismatch", id.c_str()), CCL_ERROR_NORMAL);
+    }
+
     return "";
+}
+
+bool ccl_config::has_errors(void)
+{
+    return m_errors.size() > 0;
+}
+
+bool ccl_config::has_fatal_errors(void)
+{
+    return m_fatal_errors;
+}
+
+std::string ccl_config::get_error_message(void)
+{
+    if (!has_errors())
+        return "No errors reported";
+    
+    std::string error = format("Encountered errors when loading '%s':\n", m_path.c_str());
+    int i = 0;
+    bool flag = false;
+
+    for (auto const& e : m_errors)
+    {
+        error.append(format(" [%s] %s\n", error_to_string(e.second), e.first.c_str()));
+        if (++i > 5)
+        {
+            flag = true;
+            break;
+        }
+    }
+
+    if (flag)
+        error.append(format(" %i more error(s) reported", m_errors.size() - 5));
+    
+    return error;
+}
+
+void ccl_config::add_error(std::string error_msg, ERROR_LEVEL lvl)
+{
+    if (lvl == CCL_ERROR_FATAL)
+        m_fatal_errors = true;
+    m_errors[error_msg] = lvl;
+}
+
+const char * ccl_config::error_to_string(ERROR_LEVEL lvl)
+{
+    switch (lvl)
+    {
+    case CCL_ERROR_NORMAL:
+        return "ERROR";
+    case CCL_ERROR_FATAL:
+        return "FATAL";
+    default:
+        return "-----";
+        break;
+    }
 }
 
 DATA_TYPE ccl_config::util_parse_type(char c)
