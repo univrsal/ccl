@@ -307,6 +307,12 @@ bool ccl_config::is_empty(void)
     return m_empty;
 }
 
+bool ccl_config::can_write(void)
+{
+    std::ifstream f(m_path);
+    return f.good();
+}
+
 bool ccl_config::can_load(void)
 {
     std::ifstream f(m_path);
