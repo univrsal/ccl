@@ -1,5 +1,11 @@
 #include "ccl.hpp"
 
+/**
+ * This file is part of CCL which is licenced under
+ * the MIT licence (See LICENCE)
+ * github.com/univrsal/ccl
+ */
+
 #ifdef WINDOWS
 enum DATA_TYPE {
     CCL_TYPE_INVALID,
