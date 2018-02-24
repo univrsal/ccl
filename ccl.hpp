@@ -101,6 +101,8 @@ public:
 
     // True if the file didn't exist our couldn't be loaded
     bool is_empty(void);
+    // True if the current path can be written to
+    bool can_write(void);
     // True if file exists and can be accessed
     bool can_load(void);
     // True if config value could be found by identifier

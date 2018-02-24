@@ -217,15 +217,28 @@ void ccl_config::load(void)
         std::getline(f, line);
         int line_index = 2;
 
-        if (line.at(0) == '#')
-            m_header = line.erase(0, 2);
+        if (!line.empty())
+        {
+            if (line.at(0) == '#')
+                m_header = line.erase(0, 2);
+            else
+                add_error("Line one in config has to be a comment! First value skipped!", CCL_ERROR_NORMAL);
+        }
         else
-            add_error("Line one in config has to be a comment! First value skipped!", CCL_ERROR_NORMAL);
-
+        {
+            add_error("First line was empty!", CCL_ERROR_NORMAL);
+        }
         
         while (std::getline(f, line))
         {
             std::string comment; // Skip all comments and save last one
+
+            if (line.empty())
+            {
+                add_error(format("Line %i was empty! Skipping.", line_index), CCL_ERROR_NORMAL);
+                continue;
+            }
+
             while (line.at(0) == '#')
             {
                 comment = line;
@@ -313,10 +326,20 @@ bool ccl_config::is_empty(void)
     return m_empty;
 }
 
+bool ccl_config::can_write(void)
+{
+    std::ofstream fs(m_path.c_str());
+    bool result = fs.good();
+    fs.close();
+    return result;;
+}
+
 bool ccl_config::can_load(void)
 {
     std::ifstream f(m_path);
-    return !m_path.empty() && f.good();
+    bool result = f.good() && !m_path.empty();
+    f.close();
+    return result;
 }
 
 bool ccl_config::node_exists(std::string id)
