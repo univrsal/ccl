@@ -133,6 +133,8 @@ public:
     // Reads out a value if it exists
     int get_int(std::string id);
     // Reads out a value if it exists
+    int get_hex(std::string id);
+    // Reads out a value if it exists
     float get_float(std::string id);
     // Reads out a value if it exists
     bool get_bool(std::string id);

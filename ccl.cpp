@@ -7,7 +7,8 @@
  */
 
 #ifdef WINDOWS
-enum DATA_TYPE {
+enum DATA_TYPE
+{
     CCL_TYPE_INVALID,
     CCL_TYPE_INT,
     CCL_TYPE_STRING,
@@ -15,7 +16,8 @@ enum DATA_TYPE {
     CCL_TYPE_FLOAT
 };
 
-enum ERROR_LEVEL {
+enum ERROR_LEVEL
+{
     CCL_ERROR_NORMAL,
     CCL_ERROR_FATAL
 };
@@ -303,7 +305,7 @@ void ccl_config::write(void)
 
     if (fs)
     {
-        ccl_data* next = m_first_node;
+        ccl_data * next = m_first_node;
         fs << "# " << m_header.c_str() << std::endl;
 
         while (next)
@@ -362,7 +364,7 @@ ccl_data * ccl_config::get_node(std::string id)
         return NULL;
     }
         
-    ccl_data* node = m_first_node;
+    ccl_data * node = m_first_node;
 
     while (node)
     {
@@ -413,7 +415,7 @@ void ccl_config::add_string(std::string id, std::string comment, std::string val
 
 void ccl_config::set_int(std::string id, int val)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node && node->get_type() == CCL_TYPE_INT)
     {
@@ -427,7 +429,7 @@ void ccl_config::set_int(std::string id, int val)
 
 void ccl_config::set_float(std::string id, float val)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node && node->get_type() == CCL_TYPE_FLOAT)
     {
@@ -441,7 +443,7 @@ void ccl_config::set_float(std::string id, float val)
 
 void ccl_config::set_bool(std::string id, bool val)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node && node->get_type() == CCL_TYPE_BOOL)
     {
@@ -455,7 +457,7 @@ void ccl_config::set_bool(std::string id, bool val)
 
 void ccl_config::set_string(std::string id, std::string val)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node && node->get_type() == CCL_TYPE_STRING)
     {
@@ -469,7 +471,7 @@ void ccl_config::set_string(std::string id, std::string val)
 
 int ccl_config::get_int(std::string id)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node && node->get_type() == CCL_TYPE_INT)
     {
@@ -483,9 +485,27 @@ int ccl_config::get_int(std::string id)
     return 0;
 }
 
+int ccl_config::get_hex(std::string id)
+{
+	ccl_data * node = get_node(id);
+	if (node && node->get_type() == CCL_TYPE_STRING)
+	{
+		std::string value = node->get_value();
+		if (value.find("0x") != std::string::npos)
+		{
+			return std::stoul(value, nullptr, 16);
+		}
+		else
+		{
+			return (uint16_t) 0x0;
+		}
+	}
+	return 0x0;
+}
+
 float ccl_config::get_float(std::string id)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node && node->get_type() == CCL_TYPE_FLOAT)
     {
@@ -501,7 +521,7 @@ float ccl_config::get_float(std::string id)
 
 bool ccl_config::get_bool(std::string id)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node && node->get_type() == CCL_TYPE_BOOL)
     {
@@ -517,7 +537,7 @@ bool ccl_config::get_bool(std::string id)
 
 std::string ccl_config::get_string(std::string id)
 {
-    ccl_data* node = get_node(id);
+    ccl_data * node = get_node(id);
 
     if (node)
     {
