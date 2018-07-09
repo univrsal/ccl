@@ -188,6 +188,7 @@ void ccl_config::free_nodes(void)
 		node = next;
 	}
 	m_first_node = NULL;
+	m_empty = true;
 	node = NULL;
 }
 
