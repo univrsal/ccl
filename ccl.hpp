@@ -88,7 +88,7 @@ public:
 
 	~ccl_config();
 
-	void free(void);
+	void free_nodes(void);  /* Deletes ALL nodes */
 	void load(void);
 	void write(void);
 
@@ -101,9 +101,9 @@ public:
 	// True if file exists and can be accessed
 	bool can_load(void);
 	// True if config value could be found by identifier
-	bool node_exists(std::string id);
+	bool node_exists(std::string id, bool silent = false);
 	// Get data node by identifier
-	ccl_data* get_node(std::string id);
+	ccl_data * get_node(std::string id, bool silent = false);
 
 	// Adds a new data node (Use type specific methods instead)
 	void add_node(ccl_data* node, bool replace = false);
@@ -159,7 +159,7 @@ private:
 
 	void add_error(std::string error_msg, ERROR_LEVEL lvl);
 
-	const char* error_to_string(ERROR_LEVEL lvl);
+	const char * error_to_string(ERROR_LEVEL lvl);
 
 	DATA_TYPE util_parse_type(char c);
 

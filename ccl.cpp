@@ -170,13 +170,13 @@ ccl_config::ccl_config(std::wstring path, std::string header)
 
 ccl_config::~ccl_config()
 {
-	free();
+	free_nodes();
 	m_empty = true;
 	m_header = "";
 	m_path.clear();
 }
 
-void ccl_config::free(void)
+void ccl_config::free_nodes(void)
 {
 	ccl_data* node = m_first_node;
 	ccl_data* next = NULL;
@@ -187,7 +187,7 @@ void ccl_config::free(void)
 		delete node;
 		node = next;
 	}
-
+	m_first_node = NULL;
 	node = NULL;
 }
 
@@ -269,7 +269,7 @@ void ccl_config::load(void)
 				continue;
 			}
 
-			ccl_data* new_node = new ccl_data(segments[0], comment, segments[1], type);
+			ccl_data* new_node = new ccl_data(segments[0], comment.erase(0, 2), segments[1], type);
 			add_node(new_node);
 			line_index++;
 		}
@@ -306,7 +306,9 @@ void ccl_config::write(void)
 
 		while (next)
 		{
-			fs << "# " << next->get_comment().c_str() << std::endl;
+			if (!next->get_comment().empty())
+				fs << "# " << next->get_comment().c_str() << std::endl;
+
 			fs << next->get_type() << "_" << next->get_id().c_str() << "=" << next->get_value().c_str() << std::endl;
 			next = next->get_next();
 		}
@@ -340,10 +342,10 @@ bool ccl_config::can_load(void)
 	return result;
 }
 
-bool ccl_config::node_exists(std::string id)
+bool ccl_config::node_exists(std::string id, bool silent)
 {
-	bool flag = get_node(id) != NULL;
-	if (flag)
+	bool flag = get_node(id, silent) != NULL;
+	if (flag && !silent)
 		add_error(format("Value with id '%s' already exists", id.c_str()), CCL_ERROR_NORMAL);
 	return flag;
 }
@@ -353,7 +355,7 @@ ccl_data* ccl_config::get_first(void)
 	return m_first_node;
 }
 
-ccl_data * ccl_config::get_node(std::string id)
+ccl_data * ccl_config::get_node(std::string id, bool silent)
 {
 	if (m_empty)
 	{
@@ -371,7 +373,9 @@ ccl_data * ccl_config::get_node(std::string id)
 
 		node = node->get_next();
 	}
-	add_error(format("Value with id '%s' does not exist", id.c_str()), CCL_ERROR_NORMAL);
+
+	if (!silent)
+		add_error(format("Value with id '%s' does not exist", id.c_str()), CCL_ERROR_NORMAL);
 	return NULL;
 }
 
@@ -379,11 +383,11 @@ void ccl_config::add_node(ccl_data * node, bool replace)
 {
 	if (node)
 	{
-		if (node_exists(node->get_id()))
+		if (node_exists(node->get_id(), replace))
 		{
 			if (replace)
 			{
-				ccl_data * existing = get_node(node->get_id());
+				ccl_data * existing = get_node(node->get_id(), replace);
 				if (node->get_type() != CCL_TYPE_INVALID)
 				{
 					existing->set_value(node->get_value(), node->get_type());
