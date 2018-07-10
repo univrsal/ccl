@@ -3,9 +3,19 @@
 
 #ifdef _WIN32
 #define WINDOWS
+#define W_OK 6
+#define R_OK 4
 #else
 #define LINUX
 #endif
+
+/*
+	Amount of errors to report
+	Any errors exceeding this number will
+	be reported with a message stating
+	that there's more errors hidden
+*/
+#define MAX_ERROR_REPORT 5
 
 #include <string>
 #include <memory>
@@ -15,6 +25,15 @@
 #include <map>
 #include <vector>
 #include <sstream>
+
+#ifdef LINUX
+#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#else
+#include <io.h>
+#endif
 
 /**
  * This file is part of CCL which is licensed under
@@ -180,6 +199,7 @@ private:
 #ifdef _MSC_VER
 #include <Windows.h>
 std::wstring to_utf_16(std::string str);
+std::string to_utf8(std::wstring str);
 #endif
 
 #endif // CCL_HPP

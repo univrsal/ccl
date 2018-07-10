@@ -170,7 +170,8 @@ ccl_config::ccl_config(std::wstring path, std::string header)
 
 ccl_config::~ccl_config()
 {
-	free_nodes();
+	if (!m_empty)
+		free_nodes();
 	m_empty = true;
 	m_header = "";
 	m_path.clear();
@@ -221,11 +222,13 @@ void ccl_config::load(void)
 			if (line.at(0) == '#')
 				m_header = line.erase(0, 2);
 			else
-				add_error("Line one in config has to be a comment! First value skipped!", CCL_ERROR_NORMAL);
+				add_error("Line one in config should be a header comment! First value skipped!", CCL_ERROR_NORMAL);
 		}
 		else
 		{
+#if _DEBUG /* This error is redundant */
 			add_error("First line was empty!", CCL_ERROR_NORMAL);
+#endif
 		}
 
 		while (std::getline(f, line))
@@ -329,17 +332,26 @@ bool ccl_config::is_empty(void)
 
 bool ccl_config::can_write(void)
 {
-	std::ofstream fs(m_path.c_str());
-	bool result = fs.good();
-	fs.close();
+	bool result = false;
+#ifdef WINDOWS
+	result = _waccess(m_path.c_str(), W_OK) == 0;
+#else
+	int code = access(m_path.c_str(), W_OK);
+	result = code != EACCES && code != ENOENT && code != EROFS;
+#endif
 	return result;
 }
 
 bool ccl_config::can_load(void)
 {
-	std::ifstream f(m_path);
-	bool result = f.good() && !m_path.empty();
-	f.close();
+	bool result = false;
+
+#ifdef WINDOWS
+	result = _waccess(m_path.c_str(), R_OK) == 0;
+#else
+	int code = access(m_path.c_str(), R_OK);
+	result = code != EACCES && code != ENOENT;
+#endif
 	return result;
 }
 
@@ -584,15 +596,20 @@ std::string ccl_config::get_error_message(void)
 {
 	if (!has_errors())
 		return "No errors reported";
+	std::string error;
 
-	std::string error = format("Encountered errors when loading '%s':\n", m_path.c_str());
+#ifdef WINDOWS
+	error = format("Encountered errors when loading '%s':", to_utf8(m_path).c_str());
+#else
+	error = format("Encountered errors when loading '%s':", m_path.c_str());
+#endif
 	int i = 0;
 	bool flag = false;
 
 	for (auto const& e : m_errors)
 	{
-		error.append(format(" [%s] %s\n", error_to_string(e.second), e.first.c_str()));
-		if (++i > 5)
+		error.append(format("\n [%s] %s", error_to_string(e.second), e.first.c_str()));
+		if (++i > MAX_ERROR_REPORT)
 		{
 			flag = true;
 			break;
@@ -600,8 +617,7 @@ std::string ccl_config::get_error_message(void)
 	}
 
 	if (flag)
-		error.append(format(" %i more error(s) reported", m_errors.size() - 5));
-
+		error.append(format("\n %i more error(s) reported", m_errors.size() - MAX_ERROR_REPORT));
 	return error;
 }
 
@@ -622,7 +638,6 @@ const char * ccl_config::error_to_string(ERROR_LEVEL lvl)
 		return "FATAL";
 	default:
 		return "-----";
-		break;
 	}
 }
 
@@ -654,5 +669,14 @@ std::wstring to_utf_16(std::string str)
 		MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), &ret[0], len);
 	}
 	return ret;
+}
+
+std::string to_utf8(std::wstring str)
+{
+	if (str.empty()) return std::string();
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0, NULL, NULL);
+	std::string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &str[0], (int)str.size(), &strTo[0], size_needed, NULL, NULL);
+	return strTo;
 }
 #endif
