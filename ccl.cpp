@@ -128,13 +128,13 @@ void ccl_data::free(void)
 	m_id.clear();
 	m_value.clear();
 	m_comment.clear();
-	m_next = NULL;
+	m_next = nullptr;
 }
 
 ccl_config::ccl_config()
 {
 	m_empty = true;
-	m_first_node = NULL;
+	m_first_node = nullptr;
 	m_header = "";
 #ifdef _MSC_VER
 	m_path = L"";
@@ -146,7 +146,7 @@ ccl_config::ccl_config()
 ccl_config::ccl_config(std::string path, std::string header)
 {
 	m_empty = true;
-	m_first_node = NULL;
+	m_first_node = nullptr;
 	m_header = header;
 #ifdef _MSC_VER
 	m_path = to_utf_16(path);
@@ -161,7 +161,7 @@ ccl_config::ccl_config(std::string path, std::string header)
 ccl_config::ccl_config(std::wstring path, std::string header)
 {
 	m_empty = true;
-	m_first_node = NULL;
+	m_first_node = nullptr;
 	m_header = header;
 	m_path = path;
 	load();
@@ -180,7 +180,7 @@ ccl_config::~ccl_config()
 void ccl_config::free_nodes(void)
 {
 	ccl_data* node = m_first_node;
-	ccl_data* next = NULL;
+	ccl_data* next = nullptr;
 
 	while (node)
 	{
@@ -188,9 +188,9 @@ void ccl_config::free_nodes(void)
 		delete node;
 		node = next;
 	}
-	m_first_node = NULL;
+	m_first_node = nullptr;
 	m_empty = true;
-	node = NULL;
+	node = nullptr;
 }
 
 template<typename ... Args>
@@ -357,7 +357,7 @@ bool ccl_config::can_load(void)
 
 bool ccl_config::node_exists(std::string id, bool silent)
 {
-	bool flag = get_node(id, silent) != NULL;
+	bool flag = get_node(id, silent) != nullptr;
 	if (flag && !silent)
 		add_error(format("Value with id '%s' already exists", id.c_str()), CCL_ERROR_NORMAL);
 	return flag;
@@ -372,7 +372,7 @@ ccl_data * ccl_config::get_node(std::string id, bool silent)
 {
 	if (m_empty)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	ccl_data * node = m_first_node;
@@ -389,7 +389,7 @@ ccl_data * ccl_config::get_node(std::string id, bool silent)
 
 	if (!silent)
 		add_error(format("Value with id '%s' does not exist", id.c_str()), CCL_ERROR_NORMAL);
-	return NULL;
+	return nullptr;
 }
 
 void ccl_config::add_node(ccl_data * node, bool replace)
@@ -662,7 +662,7 @@ DATA_TYPE ccl_config::util_parse_type(char c)
 std::wstring to_utf_16(std::string str)
 {
 	std::wstring ret;
-	int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), NULL, 0);
+	int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), nullptr, 0);
 	if (len > 0)
 	{
 		ret.resize(len);
@@ -674,9 +674,9 @@ std::wstring to_utf_16(std::string str)
 std::string to_utf8(std::wstring str)
 {
 	if (str.empty()) return std::string();
-	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0, NULL, NULL);
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &str[0], (int)str.size(), nullptr, 0, nullptr, nullptr);
 	std::string strTo(size_needed, 0);
-	WideCharToMultiByte(CP_UTF8, 0, &str[0], (int)str.size(), &strTo[0], size_needed, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, &str[0], (int)str.size(), &strTo[0], size_needed, nullptr, nullptr);
 	return strTo;
 }
 #endif
