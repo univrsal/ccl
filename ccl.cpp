@@ -6,6 +6,15 @@
  * github.com/univrsal/ccl
  */
 
+template<typename ... Args>
+std::string format(const char * format, Args ... args)
+{
+	size_t size = snprintf(nullptr, 0, format, args ...) + 1;
+	std::unique_ptr<char[]> buf(new char[size]);
+	snprintf(buf.get(), size, format, args ...);
+	return std::string(buf.get(), buf.get() + size - 1);
+}
+
 ccl_data::ccl_data()
 {
 }
@@ -193,15 +202,6 @@ void ccl_config::free_nodes(void)
 	node = nullptr;
 }
 
-template<typename ... Args>
-std::string format(const char * format, Args ... args)
-{
-	size_t size = snprintf(nullptr, 0, format, args ...) + 1;
-	std::unique_ptr<char[]> buf(new char[size]);
-	snprintf(buf.get(), size, format, args ...);
-	return std::string(buf.get(), buf.get() + size - 1);
-}
-
 void ccl_config::load(void)
 {
 	if (!can_load())
@@ -257,6 +257,16 @@ void ccl_config::load(void)
 			}
 
 			line = line.erase(0, 2);
+
+			if (line.find("\\n") != std::string::npos)
+			{
+				size_t start_pos = 0;
+				while ((start_pos = line.find("\\n", start_pos)) != std::string::npos)
+				{
+					line.replace(start_pos, 2, "\n");
+					start_pos += 1; // In case 'to' contains 'from', like replacing 'x' with 'yx'
+				}
+			}
 
 			std::string segment;
 			std::vector<std::string> segments;
