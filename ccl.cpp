@@ -1,4 +1,5 @@
 #include "ccl.hpp"
+#include <utility>
 
 /**
  * This file is part of CCL which is licensed under
@@ -21,42 +22,42 @@ ccl_data::ccl_data()
 
 ccl_data::ccl_data(std::string id, std::string comment, std::string val, DATA_TYPE type)
 {
-	m_comment = comment;
-	m_id = id;
+	m_comment = std::move(comment);
+	m_id = std::move(id);
 	m_type = type;
-	m_value = val;
+	m_value = std::move(val);
 }
 
 ccl_data::ccl_data(std::string id, std::string comment, int value)
 {
-	m_comment = comment;
-	m_id = id;
+	m_comment = std::move(comment);
+	m_id = std::move(id);
 	m_type = CCL_TYPE_INT;
 	m_value = std::to_string(value);
 }
 
 ccl_data::ccl_data(std::string id, std::string comment, float value)
 {
-	m_comment = comment;
-	m_id = id;
+	m_comment = std::move(comment);
+	m_id = std::move(id);
 	m_type = CCL_TYPE_FLOAT;
 	m_value = std::to_string(value);
 }
 
 ccl_data::ccl_data(std::string id, std::string comment, bool value)
 {
-	m_comment = comment;
-	m_id = id;
+	m_comment = std::move(comment);
+	m_id = std::move(id);
 	m_type = CCL_TYPE_BOOL;
 	m_value = std::to_string(value);
 }
 
 ccl_data::ccl_data(std::string id, std::string comment, std::string value)
 {
-	m_comment = comment;
-	m_id = id;
+	m_comment = std::move(comment);
+	m_id = std::move(id);
 	m_type = CCL_TYPE_STRING;
-	m_value = value;
+	m_value = std::move(value);
 }
 
 ccl_data::~ccl_data()
@@ -117,19 +118,19 @@ void ccl_data::set_bool(bool val)
 
 void ccl_data::set_string(std::string val)
 {
-	set_value(val, CCL_TYPE_STRING);
+	set_value(std::move(val), CCL_TYPE_STRING);
 }
 
 void ccl_data::set_value(std::string val, DATA_TYPE t)
 {
 	m_type = t;
 	m_value.clear();
-	m_value = val;
+	m_value = std::move(val);
 }
 
 void ccl_data::set_comment(std::string comment)
 {
-	m_comment = comment;
+	m_comment = std::move(comment);
 }
 
 void ccl_data::free(void)
@@ -156,9 +157,9 @@ ccl_config::ccl_config(std::string path, std::string header)
 {
 	m_empty = true;
 	m_first_node = nullptr;
-	m_header = header;
+	m_header = std::move(header);
 #ifdef _MSC_VER
-	m_path = to_utf_16(path);
+	m_path = to_utf_16(std::move(path));
 #else
 	m_path = path;
 #endif
@@ -171,8 +172,8 @@ ccl_config::ccl_config(std::wstring path, std::string header)
 {
 	m_empty = true;
 	m_first_node = nullptr;
-	m_header = header;
-	m_path = path;
+	m_header = std::move(header);
+	m_path = std::move(path);
 	load();
 }
 #endif
@@ -264,7 +265,7 @@ void ccl_config::load(void)
 				while ((start_pos = line.find("\\n", start_pos)) != std::string::npos)
 				{
 					line.replace(start_pos, 2, "\n");
-					start_pos += 1; // In case 'to' contains 'from', like replacing 'x' with 'yx'
+					start_pos += 1;
 				}
 			}
 
@@ -277,7 +278,7 @@ void ccl_config::load(void)
 				segments.push_back(segment);
 			}
 
-			if (segments.size() < 1)
+			if (segments.empty())
 			{
 				add_error(format("Invalid value at line %i. No '=' found", line_index), CCL_ERROR_NORMAL);
 				continue;
@@ -365,7 +366,7 @@ bool ccl_config::can_load(void)
 	return result;
 }
 
-bool ccl_config::node_exists(std::string id, bool silent)
+bool ccl_config::node_exists(const std::string& id, bool silent)
 {
 	bool flag = get_node(id, silent) != nullptr;
 	if (flag && !silent)
@@ -378,7 +379,7 @@ ccl_data* ccl_config::get_first(void)
 	return m_first_node;
 }
 
-ccl_data * ccl_config::get_node(std::string id, bool silent)
+ccl_data * ccl_config::get_node(const std::string& id, bool silent)
 {
 	if (m_empty)
 	{
@@ -436,25 +437,25 @@ void ccl_config::add_node(ccl_data * node, bool replace)
 
 void ccl_config::add_int(std::string id, std::string comment, int val, bool replace)
 {
-	add_node(new ccl_data(id, comment, val), replace);
+	add_node(new ccl_data(std::move(id), std::move(comment), val), replace);
 }
 
 void ccl_config::add_float(std::string id, std::string comment, float val, bool replace)
 {
-	add_node(new ccl_data(id, comment, val), replace);
+	add_node(new ccl_data(std::move(id), std::move(comment), val), replace);
 }
 
 void ccl_config::add_bool(std::string id, std::string comment, bool val, bool replace)
 {
-	add_node(new ccl_data(id, comment, val), replace);
+	add_node(new ccl_data(std::move(id), std::move(comment), val), replace);
 }
 
 void ccl_config::add_string(std::string id, std::string comment, std::string val, bool replace)
 {
-	add_node(new ccl_data(id, comment, val), replace);
+	add_node(new ccl_data(std::move(id), std::move(comment), std::move(val)), replace);
 }
 
-void ccl_config::set_int(std::string id, int val)
+void ccl_config::set_int(const std::string& id, int val)
 {
 	ccl_data * node = get_node(id);
 
@@ -468,7 +469,7 @@ void ccl_config::set_int(std::string id, int val)
 	}
 }
 
-void ccl_config::set_float(std::string id, float val)
+void ccl_config::set_float(const std::string& id, float val)
 {
 	ccl_data * node = get_node(id);
 
@@ -482,7 +483,7 @@ void ccl_config::set_float(std::string id, float val)
 	}
 }
 
-void ccl_config::set_bool(std::string id, bool val)
+void ccl_config::set_bool(const std::string& id, bool val)
 {
 	ccl_data * node = get_node(id);
 
@@ -496,7 +497,7 @@ void ccl_config::set_bool(std::string id, bool val)
 	}
 }
 
-void ccl_config::set_string(std::string id, std::string val)
+void ccl_config::set_string(const std::string& id, const std::string& val)
 {
 	ccl_data * node = get_node(id);
 
@@ -510,7 +511,7 @@ void ccl_config::set_string(std::string id, std::string val)
 	}
 }
 
-int ccl_config::get_int(std::string id)
+int ccl_config::get_int(const std::string& id)
 {
 	ccl_data * node = get_node(id);
 
@@ -528,7 +529,7 @@ int ccl_config::get_int(std::string id)
 
 int ccl_config::get_hex(std::string id)
 {
-	ccl_data * node = get_node(id);
+	ccl_data * node = get_node(std::move(id));
 	if (node && node->get_type() == CCL_TYPE_STRING)
 	{
 		std::string value = node->get_value();
@@ -544,7 +545,7 @@ int ccl_config::get_hex(std::string id)
 	return 0x0;
 }
 
-float ccl_config::get_float(std::string id)
+float ccl_config::get_float(const std::string& id)
 {
 	ccl_data * node = get_node(id);
 
@@ -560,7 +561,7 @@ float ccl_config::get_float(std::string id)
 	return 0.0f;
 }
 
-bool ccl_config::get_bool(std::string id)
+bool ccl_config::get_bool(const std::string& id)
 {
 	ccl_data * node = get_node(id);
 
@@ -576,7 +577,7 @@ bool ccl_config::get_bool(std::string id)
 	return false;
 }
 
-std::string ccl_config::get_string(std::string id)
+std::string ccl_config::get_string(const std::string& id)
 {
 	ccl_data * node = get_node(id);
 
@@ -631,7 +632,7 @@ std::string ccl_config::get_error_message(void)
 	return error;
 }
 
-void ccl_config::add_error(std::string error_msg, ERROR_LEVEL lvl)
+void ccl_config::add_error(const std::string& error_msg, ERROR_LEVEL lvl)
 {
 	if (lvl == CCL_ERROR_FATAL)
 		m_fatal_errors = true;
@@ -669,7 +670,7 @@ DATA_TYPE ccl_config::util_parse_type(char c)
 }
 
 #ifdef WINDOWS
-std::wstring to_utf_16(std::string str)
+std::wstring to_utf_16(const std::string& str)
 {
 	std::wstring ret;
 	int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), nullptr, 0);

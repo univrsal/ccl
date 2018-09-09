@@ -120,9 +120,9 @@ public:
 	// True if file exists and can be accessed
 	bool can_load(void);
 	// True if config value could be found by identifier
-	bool node_exists(std::string id, bool silent = false);
+	bool node_exists(const std::string& id, bool silent = false);
 	// Get data node by identifier
-	ccl_data * get_node(std::string id, bool silent = false);
+	ccl_data * get_node(const std::string& id, bool silent = false);
 
 	// Adds a new data node (Use type specific methods instead)
 	void add_node(ccl_data* node, bool replace = false);
@@ -136,24 +136,24 @@ public:
 	void add_string(std::string id, std::string comment, std::string val, bool replace = false);
 
 	// Sets an entry to a new value if it exists
-	void set_int(std::string id, int val);
+	void set_int(const std::string& id, int val);
 	// Sets an entry to a new value if it exists
-	void set_float(std::string id, float val);
+	void set_float(const std::string& id, float val);
 	// Sets an entry to a new value if it exists
-	void set_bool(std::string id, bool val);
+	void set_bool(const std::string& id, bool val);
 	// Sets an entry to a new value if it exists
-	void set_string(std::string id, std::string val);
+	void set_string(const std::string& id, const std::string& val);
 
 	// Reads out a value if it exists
-	int get_int(std::string id);
+	int get_int(const std::string& id);
 	// Reads out a value if it exists
 	int get_hex(std::string id);
 	// Reads out a value if it exists
-	float get_float(std::string id);
+	float get_float(const std::string& id);
 	// Reads out a value if it exists
-	bool get_bool(std::string id);
+	bool get_bool(const std::string& id);
 	// Reads out a value if it exists
-	std::string get_string(std::string id);
+	std::string get_string(const std::string& id);
 
 	/* Errors */
 	// True if any errors were reported
@@ -176,7 +176,7 @@ private:
 	/* Error reporting */
 	std::map<std::string, ERROR_LEVEL> m_errors;
 
-	void add_error(std::string error_msg, ERROR_LEVEL lvl);
+	void add_error(const std::string& error_msg, ERROR_LEVEL lvl);
 
 	const char * error_to_string(ERROR_LEVEL lvl);
 
@@ -198,7 +198,7 @@ private:
 
 #ifdef _MSC_VER
 #include <Windows.h>
-std::wstring to_utf_16(std::string str);
+std::wstring to_utf_16(const std::string& str);
 std::string to_utf8(std::wstring str);
 #endif
 
