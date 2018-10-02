@@ -230,7 +230,7 @@ private:
 #ifdef _MSC_VER
     std::wstring m_path_;
 #else
-	std::string m_path;
+	std::string m_path_;
 #endif
 };
 
