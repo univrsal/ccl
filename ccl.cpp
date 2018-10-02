@@ -423,14 +423,9 @@ bool ccl_config::can_load() const
     return result;
 }
 
-bool ccl_config::node_exists(const std::string& id, const bool silent)
+bool ccl_config::node_exists(const std::string& id)
 {
-    const auto flag = get_node(id, silent) != nullptr;
-    if (flag && !silent)
-        add_error(format(
-                      "Value with id '%s' already exists", id.c_str()),
-                  ccl_error_normal);
-    return flag;
+    return get_node(id, true) != nullptr;
 }
 
 ccl_data* ccl_config::get_first() const
@@ -468,7 +463,7 @@ void ccl_config::add_node(ccl_data* node, const bool replace)
 {
     if (node)
     {
-        if (node_exists(node->get_id(), true))
+        if (node_exists(node->get_id()))
         {
             if (replace)
             {
@@ -490,6 +485,9 @@ replacement has invalid type '%i'",
             }
             else
             {
+                add_error(format(
+                    "Value with id '%s' already exists", node->get_id().c_str()),
+                          ccl_error_normal);
                 return;
             }
         }

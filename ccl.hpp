@@ -133,7 +133,7 @@ public:
     /* True if file exists and can be accessed */
     bool can_load() const;
     /* True if config value could be found by identifier */
-    bool node_exists(const std::string& id, bool silent = false);
+    bool node_exists(const std::string& id);
     /* Get data node by identifier */
     ccl_data* get_node(const std::string& id, bool silent = false);
 
