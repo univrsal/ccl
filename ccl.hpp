@@ -25,6 +25,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <winerror.h>
 
 #ifdef LINUX
 #include <errno.h>
@@ -36,11 +37,13 @@
 
 enum data_type
 {
-    ccl_type_invalid,
+    ccl_type_invalid = -1,
     ccl_type_int,
     ccl_type_string,
     ccl_type_bool,
-    ccl_type_float
+    ccl_type_float,
+    ccl_type_point,
+    ccl_type_rect,
 };
 
 enum error_level
@@ -49,6 +52,16 @@ enum error_level
     ccl_error_fatal
 };
 
+struct ccl_point
+{
+    int x = 0, y = 0;
+};
+
+struct ccl_rect
+{
+    int x = 0, y = 0,
+        w = 0, h = 0;
+};
 
 /* Data class that holds config entries
    CCL Will create these automatically */
@@ -56,12 +69,15 @@ class ccl_data
 {
 public:
 
-    ccl_data();
-    ccl_data(std::string id, std::string comment, std::string val, data_type type);
-    ccl_data(std::string id, std::string comment, int value);
-    ccl_data(std::string id, std::string comment, float value);
-    ccl_data(std::string id, std::string comment, bool value);
-    ccl_data(std::string id, std::string comment, std::string value);
+    ccl_data() = default;
+    ccl_data(const std::string& id, const std::string& comment, const std::string& val,
+             data_type type);
+    ccl_data(const std::string& id, const std::string& comment, int value);
+    ccl_data(const std::string& id, const std::string& comment, float value);
+    ccl_data(const std::string& id, const std::string& comment, bool value);
+    ccl_data(const std::string& id, const std::string& comment, const std::string& value);
+    ccl_data(const std::string& id, const std::string& comment, int x, int y);
+    ccl_data(const std::string& id, const std::string& comment, int x, int y, int w, int h);
 
     ~ccl_data();
 
@@ -75,17 +91,19 @@ public:
     void set_int(int val);
     void set_float(float val);
     void set_bool(bool val);
-    void set_string(std::string val);
-    void set_value(std::string val, data_type t);
-    void set_comment(std::string comment);
+    void set_string(const std::string& val);
+    void set_value(const std::string& val, data_type t);
+    void set_comment(const std::string& comment);
+    void set_point(int x, int y);
+    void set_rect(int x, int y, int w, int h);
 private:
     void free();
 
-    data_type m_type_;
+    data_type m_type_ = ccl_type_invalid;
     std::string m_id_;
     std::string m_value_;
     std::string m_comment_;
-    ccl_data* m_next_;
+    ccl_data* m_next_ = nullptr;
 };
 
 /* Class holding all information and data of a config file */
@@ -104,7 +122,7 @@ public:
 
     void free_nodes(); /* Deletes ALL nodes */
     void load();
-    void write();
+    void write(bool comments = true);
 
     ccl_data* get_first() const;
 
@@ -122,13 +140,23 @@ public:
     /* Adds a new data node (Use type specific methods instead) */
     void add_node(ccl_data* node, bool replace = false);
     /* Adds a new value of type int */
-    void add_int(std::string id, std::string comment, int val, bool replace = false);
+    void add_int(const std::string& id, const std::string& comment, int val,
+                 bool replace = false);
     /* Adds a new value of type float */
-    void add_float(std::string id, std::string comment, float val, bool replace = false);
+    void add_float(const std::string& id, const std::string& comment, float val,
+                   bool replace = false);
     /* Adds a new value of type boolean */
-    void add_bool(std::string id, std::string comment, bool val, bool replace = false);
+    void add_bool(const std::string& id, const std::string& comment, const bool val,
+                  bool replace = false);
     /* Adds a new value of type string */
-    void add_string(std::string id, std::string comment, std::string val, bool replace = false);
+    void add_string(const std::string& id, const std::string& comment, const std::string& val,
+                    bool replace = false);
+    /* Adds a new value of type point (x and y values) */
+    void add_point(const std::string& id, const std::string& comment, int x, int y,
+                   bool replace = false);
+    /* Adds a new value of type rect (x, y, w and h values) */
+    void add_rect(const std::string& id, const std::string& comment,
+                    int x, int y, int w, int h, bool replace = false);
 
     /* Sets an entry to a new value if it exists */
     void set_int(const std::string& id, int val);
@@ -138,6 +166,10 @@ public:
     void set_bool(const std::string& id, bool val);
     /* Sets an entry to a new value if it exists */
     void set_string(const std::string& id, const std::string& val);
+    /* Sets an entry to a new value if it exists */
+    void set_point(const std::string& id, int x, int y);
+    /* Sets an entry to a new value if it exists */
+    void set_rect(const std::string& id, int x, int y, int w, int h);
 
     /* Reads out a value if it exists */
     int get_int(const std::string& id, bool silent = false);
@@ -149,7 +181,23 @@ public:
     bool get_bool(const std::string& id, bool silent = false);
     /* Reads out a value if it exists */
     std::string get_string(const std::string& id, bool silent = false);
-
+    /* Reads out a value if it exists */
+    int get_point_x(const std::string& id, bool silent = false);
+    /* Reads out a value if it exists */
+    int get_point_y(const std::string& id, bool silent = false);
+    /* Reads out a value if it exists */
+    int get_rect_x(const std::string& id, bool silent = false);
+    /* Reads out a value if it exists */
+    int get_rect_y(const std::string& id, bool silent = false);
+    /* Reads out a value if it exists */
+    int get_rect_w(const std::string& id, bool silent = false);
+    /* Reads out a value if it exists */
+    int get_rect_h(const std::string& id, bool silent = false);
+    /* Reads out a value if it exists */
+    ccl_point get_point(const std::string& id, bool silent = false);
+     /* Reads out a value if it exists */
+    ccl_rect get_rect(const std::string& id, bool silent = false);
+    
     /* Errors 
        True if any errors were reported
        Anything that impacts loading of the file or values
@@ -168,11 +216,10 @@ public:
 
 private:
     void add_error(const std::string& error_msg, error_level lvl);
-    
+
     static const char* error_to_string(error_level lvl);
 
     static data_type util_parse_type(char c);
-
 
     std::map<std::string, error_level> m_errors_;
     bool m_empty_ = true;
