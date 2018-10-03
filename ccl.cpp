@@ -182,7 +182,7 @@ ccl_config::ccl_config()
 #ifdef _MSC_VER
     m_path_ = L"";
 #else
-	m_path = "";
+	m_path_ = "";
 #endif
 }
 
@@ -194,7 +194,7 @@ ccl_config::ccl_config(const std::string& path, std::string header)
 #ifdef _MSC_VER
     m_path_ = to_utf_16(path);
 #else
-	m_path = path;
+	m_path_ = path;
 #endif
 
     load();
@@ -314,6 +314,13 @@ First value skipped!",
                 }
             }
 
+#ifdef LINUX
+            if (line.find('\r') != std::string::npos)
+            {
+                line.replace(line.find('\r'), 1, "");
+            }
+#endif
+
             std::string segment;
             std::vector<std::string> segments;
             std::stringstream stream(line);
@@ -361,7 +368,7 @@ void ccl_config::write(const bool comments)
 #ifdef _MSC_VER
     DeleteFileW(m_path_.c_str());
 #else
-	std::remove(m_path.c_str());
+	std::remove(m_path_.c_str());
 #endif
     std::ofstream fs(m_path_.c_str());
 
@@ -404,7 +411,7 @@ bool ccl_config::can_write() const
 #ifdef WINDOWS
     result = _waccess(m_path_.c_str(), W_OK) == 0;
 #else
-	int code = access(m_path.c_str(), W_OK);
+	int code = access(m_path_.c_str(), W_OK);
 	result = code != EACCES && code != ENOENT && code != EROFS;
 #endif
     return result;
@@ -417,7 +424,7 @@ bool ccl_config::can_load() const
 #ifdef WINDOWS
     result = _waccess(m_path_.c_str(), R_OK) == 0;
 #else
-	int code = access(m_path.c_str(), R_OK);
+	int code = access(m_path_.c_str(), R_OK);
 	result = code != EACCES && code != ENOENT;
 #endif
     return result;
@@ -867,7 +874,7 @@ std::string ccl_config::get_error_message()
                    to_utf8(m_path_).c_str());
 #else
 	error = format("Encountered errors when loading '%s':",
-        m_path.c_str());
+        m_path_.c_str());
 #endif
     auto i = 0;
     auto flag = false;

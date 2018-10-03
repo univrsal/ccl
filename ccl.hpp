@@ -10,6 +10,7 @@
 #define WINDOWS
 #define W_OK 6
 #define R_OK 4
+#include <winerror.h>
 #else
 #define LINUX
 #endif
@@ -25,7 +26,6 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <winerror.h>
 
 #ifdef LINUX
 #include <errno.h>
