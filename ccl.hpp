@@ -7,7 +7,6 @@
 #pragma once
 
 #ifdef _WIN32
-#define WINDOWS
 #define W_OK 6
 #define R_OK 4
 #include <winerror.h>
@@ -71,7 +70,7 @@ public:
 
     ccl_data() = default;
     ccl_data(const std::string& id, const std::string& comment, const std::string& val,
-             data_type type);
+        data_type type);
     ccl_data(const std::string& id, const std::string& comment, int value);
     ccl_data(const std::string& id, const std::string& comment, float value);
     ccl_data(const std::string& id, const std::string& comment, bool value);
@@ -141,22 +140,22 @@ public:
     void add_node(ccl_data* node, bool replace = false);
     /* Adds a new value of type int */
     void add_int(const std::string& id, const std::string& comment, int val,
-                 bool replace = false);
+        bool replace = false);
     /* Adds a new value of type float */
     void add_float(const std::string& id, const std::string& comment, float val,
-                   bool replace = false);
+        bool replace = false);
     /* Adds a new value of type boolean */
-    void add_bool(const std::string& id, const std::string& comment, const bool val,
-                  bool replace = false);
+    void add_bool(const std::string& id, const std::string& comment, bool val,
+        bool replace = false);
     /* Adds a new value of type string */
     void add_string(const std::string& id, const std::string& comment, const std::string& val,
-                    bool replace = false);
+        bool replace = false);
     /* Adds a new value of type point (x and y values) */
     void add_point(const std::string& id, const std::string& comment, int x, int y,
-                   bool replace = false);
+        bool replace = false);
     /* Adds a new value of type rect (x, y, w and h values) */
     void add_rect(const std::string& id, const std::string& comment,
-                    int x, int y, int w, int h, bool replace = false);
+        int x, int y, int w, int h, bool replace = false);
 
     /* Sets an entry to a new value if it exists */
     void set_int(const std::string& id, int val);
@@ -195,9 +194,9 @@ public:
     int get_rect_h(const std::string& id, bool silent = false);
     /* Reads out a value if it exists */
     ccl_point get_point(const std::string& id, bool silent = false);
-     /* Reads out a value if it exists */
+    /* Reads out a value if it exists */
     ccl_rect get_rect(const std::string& id, bool silent = false);
-    
+
     /* Errors 
        True if any errors were reported
        Anything that impacts loading of the file or values
