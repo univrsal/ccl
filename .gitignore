@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
 
+*.TMP
+
 # Compiled Object files
 *.slo
 *.lo
