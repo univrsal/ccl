@@ -7,6 +7,7 @@
 #pragma once
 
 #ifdef _WIN32
+#define F_OK 0
 #define W_OK 6
 #define R_OK 4
 #include <winerror.h>

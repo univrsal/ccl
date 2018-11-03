@@ -410,8 +410,26 @@ bool ccl_config::can_write() const
 {
     auto result = false;
 #ifdef _WIN32
+    if (_waccess(m_path_.c_str(), F_OK) == -1)
+    {
+        /* Create file first */
+		std::ofstream stream;
+		stream.open(m_path_.c_str());
+		stream << "";
+		stream.close();
+    }
+
     result = _waccess(m_path_.c_str(), W_OK) == 0;
 #else
+    if (access(m_path_.c_str(), F_OK) == -1)
+    {
+		/* Create file first */
+		std::ofstream stream;
+		stream.open(m_path_.c_str());
+		stream << "";
+		stream.close();
+    }
+
 	int code = access(m_path_.c_str(), W_OK);
 	result = code != EACCES && code != ENOENT && code != EROFS;
 #endif
