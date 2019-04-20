@@ -12,7 +12,9 @@
 #define R_OK 4
 #include <winerror.h>
 #else
+#ifndef LINUX
 #define LINUX
+#endif
 #endif
 
 /*
