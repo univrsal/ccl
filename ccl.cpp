@@ -236,6 +236,12 @@ void ccl_config::free_nodes()
     node = nullptr;
 }
 
+inline bool read_line(std::ifstream& stream, std::string& line, int& line_index)
+{
+    line_index++;
+    return std::getline(stream, line).good();
+}
+
 void ccl_config::load()
 {
     if (!can_load())
@@ -249,15 +255,16 @@ void ccl_config::load()
     {
         std::string line;
         std::getline(f, line);
-        auto line_index = 2;
-#ifdef _DEBUG
+        auto line_index = 1;
+
         if (!line.empty())
         {
             if (line.at(0) == '#')
             {
                 m_header_ = line.erase(0, 2);
-                std::getline(f, line);
+		read_line(f, line, line_index);
             }
+#ifdef _DEBUG
                 /* Another redundant error */
             else
             {
@@ -266,8 +273,9 @@ void ccl_config::load()
 First value skipped!",
                     ccl_error_normal);
             }
-        }
 #endif
+        }
+
         do
         {
             /* Skip all comments and save last one */
@@ -282,12 +290,14 @@ First value skipped!",
                 continue;
             }
 
-            while (line.at(0) == '#')
+            while (!line.empty() && line.at(0) == '#')
             {
                 comment = line;
-                std::getline(f, line);
-                line_index++;
+		read_line(f, line, line_index);
             }
+
+	    if (line.empty())
+		    continue;
 
             /* Read in the value type */
             const auto type = util_parse_type(line.at(0));
@@ -342,9 +352,7 @@ First value skipped!",
             const auto new_node = new ccl_data(
                 segments[0], comment.erase(0, 2), segments[1], type);
             add_node(new_node);
-            line_index++;
-        }
-        while (std::getline(f, line));
+        } while (read_line(f, line, line_index));
 
         if (m_first_node_)
         {
